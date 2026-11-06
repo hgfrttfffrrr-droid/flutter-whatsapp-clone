@@ -1,63 +1,51 @@
+
 name: Build WhatsApp Clone APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches:
+      - main
+      - master
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'zulu'
-        java-version: '17'
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.19.3'
-        channel: 'stable'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.3'
+          channel: stable
+          cache: true
 
-    # ارتقای نسخه Gradle به 8.1 برای پشتیبانی از namespace
-    - name: Upgrade Gradle Version
-      run: |
-        sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\/distributions\/gradle-8.1-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties
+      - name: Check Flutter
+        run: flutter doctor -v
 
-    - name: Get Dependencies
-      run: flutter pub get
+      - name: Get Dependencies
+        run: flutter pub get
 
-    # ساخت فایل موقت فایربیس
-    - name: Create Dummy Firebase Options
-      run: |
-        mkdir -p lib
-        touch lib/firebase_options.dart
-        echo "// Dummy file to bypass build error" > lib/firebase_options.dart
+      - name: Build Debug APK
+        run: flutter build apk --debug
 
-    # تنظیمات استاندارد
-    - name: Set Gradle Properties
-      run: |
-        echo "android.useAndroidX=true" >> android/gradle.properties
-        echo "android.enableJetifier=true" >> android/gradle.properties
-        echo "kotlin.jvm.target.validation.mode=warning" >> android/gradle.properties
-
-    # اصلاح فایل build.gradle اصلی (حذف namespace اضافی)
-    - name: Fix app/build.gradle
-      run: |
-        # فقط buildConfig رو اضافه میکنیم، namespace رو حذف کردیم
-        sed -i '/android {/a \    buildFeatures {\n        buildConfig true\n    }' android/app/build.gradle
-
-    - name: Build APK
-      run: flutter build apk --debug
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: WhatsApp-Clone-APK
-        path: build/app/outputs/flutter-apk/app-debug.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WhatsApp-Clone-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
