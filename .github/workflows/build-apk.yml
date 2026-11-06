@@ -22,32 +22,35 @@ jobs:
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.19.3' # نسخه پایدار
+        flutter-version: '3.19.3'
         channel: 'stable'
+
+    # ارتقای نسخه Gradle برای سازگاری با Java 17
+    - name: Upgrade Gradle Version
+      run: |
+        sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\/distributions\/gradle-8.0-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties
 
     - name: Get Dependencies
       run: flutter pub get
 
-    # ساخت فایل موقت فایربیس برای جلوگیری از خطای بیلد
+    # ساخت فایل موقت فایربیس
     - name: Create Dummy Firebase Options
       run: |
         mkdir -p lib
         touch lib/firebase_options.dart
         echo "// Dummy file to bypass build error" > lib/firebase_options.dart
 
-    # تنظیمات استاندارد برای رفع خطاهای نسخه‌های جدید Gradle
+    # تنظیمات استاندارد
     - name: Set Gradle Properties
       run: |
         echo "android.useAndroidX=true" >> android/gradle.properties
         echo "android.enableJetifier=true" >> android/gradle.properties
         echo "kotlin.jvm.target.validation.mode=warning" >> android/gradle.properties
 
-    # اضافه کردن buildFeatures به فایل build.gradle اصلی
+    # اصلاح فایل build.gradle اصلی
     - name: Fix app/build.gradle
       run: |
-        # اضافه کردن buildConfig به بلوک android
         sed -i '/android {/a \    buildFeatures {\n        buildConfig true\n    }' android/app/build.gradle
-        # اطمینان از اینکه namespace درست تنظیم شده (اگر ندارد)
         sed -i '/android {/a \    namespace "com.example.flutter_whatsapp_clone"' android/app/build.gradle
 
     - name: Build APK
