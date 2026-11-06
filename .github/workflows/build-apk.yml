@@ -25,10 +25,10 @@ jobs:
         flutter-version: '3.19.3'
         channel: 'stable'
 
-    # ارتقای نسخه Gradle برای سازگاری با Java 17
+    # ارتقای نسخه Gradle به 8.1 برای پشتیبانی از namespace
     - name: Upgrade Gradle Version
       run: |
-        sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\/distributions\/gradle-8.0-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties
+        sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\/distributions\/gradle-8.1-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties
 
     - name: Get Dependencies
       run: flutter pub get
@@ -47,11 +47,11 @@ jobs:
         echo "android.enableJetifier=true" >> android/gradle.properties
         echo "kotlin.jvm.target.validation.mode=warning" >> android/gradle.properties
 
-    # اصلاح فایل build.gradle اصلی
+    # اصلاح فایل build.gradle اصلی (حذف namespace اضافی)
     - name: Fix app/build.gradle
       run: |
+        # فقط buildConfig رو اضافه میکنیم، namespace رو حذف کردیم
         sed -i '/android {/a \    buildFeatures {\n        buildConfig true\n    }' android/app/build.gradle
-        sed -i '/android {/a \    namespace "com.example.flutter_whatsapp_clone"' android/app/build.gradle
 
     - name: Build APK
       run: flutter build apk --debug
