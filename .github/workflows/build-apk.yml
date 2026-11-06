@@ -26,18 +26,20 @@ jobs:
           distribution: temurin
           java-version: '11'
 
-      - name: Set up Flutter
+      - name: Set up Flutter 3.3.10
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.3'
+          flutter-version: '3.3.10'
           channel: stable
-          cache: true
 
-      - name: Check Java Version
-        run: java -version
+      - name: Show Versions
+        run: |
+          java -version
+          flutter --version
+          dart --version
 
-      - name: Check Flutter
-        run: flutter doctor -v
+      - name: Clean Project
+        run: flutter clean
 
       - name: Get Dependencies
         run: flutter pub get
